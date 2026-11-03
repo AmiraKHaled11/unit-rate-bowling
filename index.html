@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Unit Rate Bowling</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0b1530;font-family:"Segoe UI",Calibri,Arial,sans-serif;overflow:hidden;user-select:none}
+#wrap{width:100vw;height:100vh;display:flex;align-items:center;justify-content:center}
+#stage{position:relative;width:1920px;height:1080px;flex:none;transform-origin:center;background:radial-gradient(circle at 30% 20%,#1f3a7a,#0b1530 70%);overflow:hidden}
+button{font:700 34px "Segoe UI",Arial;border:0;border-radius:18px;padding:16px 38px;color:#fff;background:#f59f00;cursor:pointer;box-shadow:0 6px 0 #b86e00}
+button:active{transform:translateY(4px);box-shadow:0 2px 0 #b86e00}
+.scr{position:absolute;inset:0}
+/* menu */
+#menu{display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center}
+#menu h1{font-size:96px;margin:0;color:#ffd43b;text-shadow:0 6px 0 #b86e00}
+#menu h2{font-size:38px;margin:10px 0 50px;font-weight:400;color:#c5d3ff}
+.row{display:flex;gap:30px;justify-content:center;margin:18px 0}
+.big{font-size:44px;padding:26px 60px}
+.alt{background:#3b5bdb;box-shadow:0 6px 0 #233a99}
+.ghost{background:#334;box-shadow:0 6px 0 #112}
+#nameBox{display:none;margin-top:30px}
+#nameBox input{font:600 36px "Segoe UI";padding:14px 20px;border-radius:14px;border:0;width:520px;text-align:center}
+#teamBox{display:none;margin-top:30px}
+/* game */
+#lane{position:absolute;left:70px;top:150px;width:720px;height:900px}
+#laneBg{position:absolute;inset:0;background:linear-gradient(90deg,#3a2a14 0 9%,#d9a35e 9% 91%,#3a2a14 91%);clip-path:polygon(33% 0,67% 0,100% 100%,0 100%);}
+#laneBg::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,#0000 0 38px,#0000001a 38px 40px)}
+.arrow{position:absolute;bottom:230px;width:0;height:0;border-left:12px solid transparent;border-right:12px solid transparent;border-bottom:30px solid #8a5a1f}
+.pin{position:absolute;width:42px;height:92px;transform-origin:50% 90%}
+#ball{position:absolute;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ff8fd8,#c2255c 45%,#5c0b2e 100%);box-shadow:0 10px 20px #0008;left:300px;top:760px}
+#ball::before,#ball::after{content:"";position:absolute;width:16px;height:16px;border-radius:50%;background:#3a0620;top:30px;left:44px}
+#ball::after{top:48px;left:64px}
+#banner{position:absolute;left:0;width:860px;top:420px;text-align:center;font-size:120px;font-weight:900;color:#ffd43b;text-shadow:0 8px 0 #b86e00,0 0 40px #fff8;opacity:0;pointer-events:none}
+#score{position:absolute;left:860px;top:30px;width:1030px;display:flex;gap:16px;flex-wrap:wrap}
+.pl{flex:1;min-width:220px;border-radius:18px;padding:12px 18px;color:#fff;font-size:30px;font-weight:700;border:5px solid transparent;opacity:.75}
+.pl.on{opacity:1;border-color:#fff;box-shadow:0 0 26px #fff9}
+.pl small{display:block;font-size:22px;font-weight:400}
+.pl b{font-size:46px}
+#frames{position:absolute;left:860px;top:200px;width:1030px;display:flex;gap:6px}
+.fr{flex:1;height:30px;border-radius:6px;background:#ffffff22;color:#fff;font-size:18px;font-weight:800;text-align:center;line-height:30px}
+.fr.x{background:#2f9e44}.fr.m{background:#e03131}.fr.cur{outline:3px solid #ffd43b}
+#qcard{position:absolute;left:860px;top:260px;width:1030px;height:520px;background:#fff;border-radius:28px;padding:30px 40px;box-shadow:0 10px 30px #0006}
+#qnum{font-size:26px;font-weight:700;color:#3b5bdb}
+#qtext{font-size:44px;font-weight:700;color:#1d2242;margin:14px 0 26px;line-height:1.25;min-height:170px}
+#opts{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.opt{font-size:40px;padding:20px;background:#e7f5ff;color:#1d2242;box-shadow:0 6px 0 #a5d8ff;text-align:left}
+.opt b{color:#3b5bdb;margin-right:12px}
+.opt.ok{background:#2f9e44;color:#fff;box-shadow:0 6px 0 #1b6b2c}.opt.ok b{color:#fff}
+.opt.no{background:#e03131;color:#fff;box-shadow:0 6px 0 #8f1d1d}.opt.no b{color:#fff}
+.opt.dim{opacity:.4}
+#fb{position:absolute;left:860px;top:800px;width:1030px;min-height:120px;border-radius:22px;padding:18px 30px;font-size:36px;font-weight:700;color:#fff;display:none}
+#next{position:absolute;right:30px;bottom:30px;display:none;font-size:40px}
+#turn{position:absolute;left:70px;top:40px;font-size:44px;font-weight:800;color:#fff}
+#turn span{color:#ffd43b}
+#home{position:absolute;left:70px;top:100px;font-size:20px;padding:8px 18px;background:#334;box-shadow:0 4px 0 #112}
+/* end */
+#end{display:none;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center;background:#0b1530ee}
+#end h1{font-size:90px;margin:0 0 20px;color:#ffd43b}
+#board{font-size:44px;line-height:1.6;margin-bottom:40px}
+.conf{position:absolute;width:16px;height:26px;top:-40px}
+</style></head>
+<body><div id="wrap"><div id="stage">
+
+<div id="menu" class="scr">
+  <h1>&#127923; Unit Rate Bowling</h1>
+  <h2>Grade 6 &middot; Find the rate for ONE &middot; 25 balls</h2>
+  <div class="row"><button class="big" onclick="pick('ind')">&#128100; Individual</button><button class="big alt" onclick="pick('team')">&#128101; Teams</button></div>
+  <div id="nameBox"><input id="pname" placeholder="Player name" maxlength="18"><div class="row"><button onclick="startInd()">Start &#9654;</button></div></div>
+  <div id="teamBox"><div style="font-size:34px;margin-bottom:10px">How many teams?</div>
+    <div class="row"><button class="alt" onclick="startTeams(2)">2</button><button class="alt" onclick="startTeams(3)">3</button><button class="alt" onclick="startTeams(4)">4</button></div></div>
+  <div style="position:absolute;bottom:40px;font-size:24px;color:#9fb0e8">Correct answer = a STRONG shot &rarr; STRIKE (+10). Wrong answer = a weak shot into the gutter (0).</div>
+</div>
+
+<div id="game" class="scr" style="display:none">
+  <div id="turn">Turn: <span id="who"></span></div>
+  <button id="home" onclick="toMenu()">&#8962; Menu</button>
+  <div id="lane"><div id="laneBg"></div><div id="pins"></div><div id="ball"></div></div>
+  <div id="banner"></div>
+  <div id="score"></div>
+  <div id="frames"></div>
+  <div id="qcard"><div id="qnum"></div><div id="qtext"></div><div id="opts"></div></div>
+  <div id="fb"></div>
+  <button id="next" onclick="nextQ()">Next ball &#9654;</button>
+</div>
+
+<div id="end" class="scr"><h1>&#127942; Game over!</h1><div id="board"></div>
+  <div class="row"><button onclick="toMenu()">Play again</button></div></div>
+
+</div></div>
+<script>
+const QS=[{"q": "4 pens cost 12 SAR. How much does 1 pen cost?", "o": ["16 SAR", "8 SAR", "48 SAR", "3 SAR"], "c": 3, "e": "12 ÷ 4 = 3 SAR for 1"}, {"q": "Sara reads 20 pages in 5 days. How many pages does she read each day?", "o": ["25 pages", "100 pages", "4 pages", "15 pages"], "c": 2, "e": "20 ÷ 5 = 4 pages for 1"}, {"q": "6 eggs cost 18 SAR. What is the cost of 1 egg?", "o": ["3 SAR", "12 SAR", "24 SAR", "108 SAR"], "c": 0, "e": "18 ÷ 6 = 3 SAR for 1"}, {"q": "A car travels 100 km in 2 hours. How many km does it travel in 1 hour?", "o": ["50 km", "200 km", "98 km", "102 km"], "c": 0, "e": "100 ÷ 2 = 50 km for 1"}, {"q": "8 juice boxes cost 16 SAR. What is the cost of 1 juice box?", "o": ["24 SAR", "8 SAR", "128 SAR", "2 SAR"], "c": 3, "e": "16 ÷ 8 = 2 SAR for 1"}, {"q": "30 students sit equally in 3 buses. How many students are in each bus?", "o": ["10 students", "90 students", "27 students", "33 students"], "c": 0, "e": "30 ÷ 3 = 10 students for 1"}, {"q": "Noura types 40 words in 2 minutes. How many words does she type per minute?", "o": ["20 words", "38 words", "80 words", "42 words"], "c": 0, "e": "40 ÷ 2 = 20 words for 1"}, {"q": "5 notebooks cost 25 SAR. What is the cost of 1 notebook?", "o": ["30 SAR", "5 SAR", "125 SAR", "20 SAR"], "c": 1, "e": "25 ÷ 5 = 5 SAR for 1"}, {"q": "Fatima walks 12 km in 3 hours. How many km does she walk per hour?", "o": ["36 km", "15 km", "9 km", "4 km"], "c": 3, "e": "12 ÷ 3 = 4 km for 1"}, {"q": "9 cupcakes cost 27 SAR. What is the cost of 1 cupcake?", "o": ["36 SAR", "18 SAR", "3 SAR", "243 SAR"], "c": 2, "e": "27 ÷ 9 = 3 SAR for 1"}, {"q": "A tap fills 60 litres in 6 minutes. How many litres per minute?", "o": ["10 litres", "66 litres", "360 litres", "54 litres"], "c": 0, "e": "60 ÷ 6 = 10 litres for 1"}, {"q": "7 tickets cost 70 SAR. What is the price of 1 ticket?", "o": ["10 SAR", "63 SAR", "490 SAR", "77 SAR"], "c": 0, "e": "70 ÷ 7 = 10 SAR for 1"}, {"q": "Reem earns 45 SAR in 5 hours. How much does she earn per hour?", "o": ["40 SAR", "50 SAR", "9 SAR", "225 SAR"], "c": 2, "e": "45 ÷ 5 = 9 SAR for 1"}, {"q": "24 cookies are packed equally in 4 boxes. How many cookies are in each box?", "o": ["96 cookies", "28 cookies", "20 cookies", "6 cookies"], "c": 3, "e": "24 ÷ 4 = 6 cookies for 1"}, {"q": "3 kg of rice cost 21 SAR. What is the cost of 1 kg?", "o": ["18 SAR", "7 SAR", "24 SAR", "63 SAR"], "c": 1, "e": "21 ÷ 3 = 7 SAR for 1"}, {"q": "A heart beats 160 times in 2 minutes. How many beats per minute?", "o": ["80 beats", "158 beats", "162 beats", "320 beats"], "c": 0, "e": "160 ÷ 2 = 80 beats for 1"}, {"q": "10 pencils cost 30 SAR. What is the cost of 1 pencil?", "o": ["40 SAR", "20 SAR", "3 SAR", "300 SAR"], "c": 2, "e": "30 ÷ 10 = 3 SAR for 1"}, {"q": "A plane flies 900 km in 3 hours. How many km per hour?", "o": ["2700 km", "903 km", "300 km", "897 km"], "c": 2, "e": "900 ÷ 3 = 300 km for 1"}, {"q": "2 litres of milk cost 14 SAR. What is the cost of 1 litre?", "o": ["28 SAR", "7 SAR", "12 SAR", "16 SAR"], "c": 1, "e": "14 ÷ 2 = 7 SAR for 1"}, {"q": "A car goes 48 km on 4 litres of fuel. How many km on 1 litre?", "o": ["192 km", "44 km", "12 km", "52 km"], "c": 2, "e": "48 ÷ 4 = 12 km for 1"}, {"q": "1 water bottle costs 4 SAR. How much do 6 bottles cost?", "o": ["24 SAR", "10 SAR", "2 SAR", "46 SAR"], "c": 0, "e": "Unit rate × 6:  4 × 6 = 24 SAR"}, {"q": "A worker is paid 54 SAR for 6 hours. What is the pay for 1 hour?", "o": ["60 SAR", "9 SAR", "48 SAR", "324 SAR"], "c": 1, "e": "54 ÷ 6 = 9 SAR for 1"}, {"q": "Which is the better buy?  3 juices for 12 SAR  or  5 juices for 15 SAR", "o": ["3 for 12 SAR", "5 for 15 SAR", "They are the same", "Cannot tell"], "c": 1, "e": "12 ÷ 3 = 4 SAR each,  15 ÷ 5 = 3 SAR each.  3 SAR is cheaper."}, {"q": "A runner runs 400 m in 80 seconds. How many metres per second?", "o": ["5 m", "32000 m", "320 m", "480 m"], "c": 0, "e": "400 ÷ 80 = 5 m for 1"}, {"q": "Which is the better buy?  2 mangoes for 10 SAR  or  4 mangoes for 16 SAR", "o": ["They are the same", "2 for 10 SAR", "4 for 16 SAR", "Cannot tell"], "c": 2, "e": "10 ÷ 2 = 5 SAR each,  16 ÷ 4 = 4 SAR each.  4 SAR is cheaper."}];
+const COL=["#e8590c","#1c7ed6","#2f9e44","#7048e8"];
+const $=id=>document.getElementById(id),st=$("stage");
+function fit(){st.style.transform="scale("+Math.min(innerWidth/1920,innerHeight/1080)+")"}addEventListener("resize",fit);fit();
+let players=[],cur=0,qi=0,busy=false,order=[];
+
+/* ---------- pins ---------- */
+const PIN='<svg viewBox="0 0 42 92" width="42" height="92"><path d="M21 2c7 0 9 8 7 16-2 6-5 9-4 14 2 10 13 22 13 38 0 14-7 20-16 20S5 84 5 70c0-16 11-28 13-38 1-5-2-8-4-14C12 10 14 2 21 2z" fill="#fff" stroke="#999" stroke-width="1.5"/><path d="M15 28h12M14 33h14" stroke="#e03131" stroke-width="3.5"/></svg>';
+const PINPOS=[[0,3],[-1,2],[1,2],[-2,1],[0,1],[2,1],[-3,0],[-1,0],[1,0],[3,0]];
+let pins=[];
+function setPins(){const box=$("pins");box.innerHTML="";pins=[];
+ PINPOS.forEach(([c,r])=>{const p=document.createElement("div");p.className="pin";const s=0.85+0.08*r;
+  p.style.left=(339+c*38)+"px";p.style.top=(20+r*44)+"px";p.style.transform="scale("+s+")";p.dataset.s=s;p.innerHTML=PIN;box.appendChild(p);pins.push(p)});
+ const b=$("ball");b.getAnimations().forEach(a=>a.cancel());b.style.opacity=1}
+
+/* ---------- sound ---------- */
+let AC=null;function ctx(){if(!AC)try{AC=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}if(AC&&AC.state==="suspended")AC.resume();return AC}
+function noise(c,len){const n=Math.floor(c.sampleRate*len),b=c.createBuffer(1,n,c.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=Math.random()*2-1;return b}
+function rollSound(dur,vol){const c=ctx();if(!c)return;const s=c.createBufferSource();s.buffer=noise(c,dur);const f=c.createBiquadFilter();f.type="lowpass";f.frequency.value=180;
+ const g=c.createGain();const t=c.currentTime;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+0.15);g.gain.linearRampToValueAtTime(vol*0.6,t+dur-0.1);g.gain.linearRampToValueAtTime(0,t+dur);
+ s.connect(f);f.connect(g);g.connect(c.destination);s.start(t)}
+function knock(t0,f,a){const c=ctx();const o=c.createOscillator(),g=c.createGain();o.frequency.value=f;o.type="triangle";g.gain.setValueAtTime(a,t0);g.gain.exponentialRampToValueAtTime(0.001,t0+0.18);o.connect(g);g.connect(c.destination);o.start(t0);o.stop(t0+0.2)}
+function burst(t0,len,a,lo,hi){const c=ctx();const s=c.createBufferSource();s.buffer=noise(c,len);const f=c.createBiquadFilter();f.type="bandpass";f.frequency.value=lo+Math.random()*(hi-lo);f.Q.value=1.2;
+ const g=c.createGain();g.gain.setValueAtTime(a,t0);g.gain.exponentialRampToValueAtTime(0.001,t0+len);s.connect(f);f.connect(g);g.connect(c.destination);s.start(t0)}
+function crash(){const c=ctx();if(!c)return;const t=c.currentTime;for(let i=0;i<14;i++){const tt=t+Math.random()*0.35;knock(tt,700+Math.random()*900,0.35);burst(tt,0.09,0.5,1500,4000)}}
+function applause(){const c=ctx();if(!c)return;const t=c.currentTime+0.1,D=2.8;
+ for(let i=0;i<260;i++){const x=Math.random();const tt=t+x*D;const env=Math.sin(Math.PI*Math.min(1,x*1.15));burst(tt,0.035,0.25*env+0.03,900,2600)}
+ [0,0.35,0.8].forEach((d,k)=>{const o=c.createOscillator(),g=c.createGain();o.type="sine";const t0=t+d;o.frequency.setValueAtTime(1400+k*200,t0);o.frequency.linearRampToValueAtTime(2500+k*150,t0+0.35);o.frequency.linearRampToValueAtTime(1900,t0+0.6);
+  g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(0.06,t0+0.05);g.gain.linearRampToValueAtTime(0,t0+0.6);o.connect(g);g.connect(c.destination);o.start(t0);o.stop(t0+0.65)});
+ [523,659,784,1047].forEach((f,k)=>{const o=c.createOscillator(),g=c.createGain();o.type="triangle";o.frequency.value=f;const t0=t+k*0.11;g.gain.setValueAtTime(0.12,t0);g.gain.exponentialRampToValueAtTime(0.001,t0+0.45);o.connect(g);g.connect(c.destination);o.start(t0);o.stop(t0+0.5)})}
+function peep(){const c=ctx();if(!c)return;const t=c.currentTime;[[0,520],[0.28,390]].forEach(([d,f])=>{const o=c.createOscillator(),g=c.createGain();o.type="square";o.frequency.value=f;g.gain.setValueAtTime(0.09,t+d);g.gain.setValueAtTime(0,t+d+0.22);o.connect(g);g.connect(c.destination);o.start(t+d);o.stop(t+d+0.25)})}
+
+/* ---------- flow ---------- */
+function pick(m){$("nameBox").style.display=m=="ind"?"block":"none";$("teamBox").style.display=m=="team"?"block":"none";if(m=="ind")$("pname").focus()}
+function startInd(){const n=$("pname").value.trim()||"Player";begin([{n:n,s:0,c:COL[0]}])}
+function startTeams(k){begin(Array.from({length:k},(_,i)=>({n:"Team "+(i+1),s:0,c:COL[i]})))}
+function begin(p){ctx();players=p;cur=0;qi=0;$("menu").style.display="none";$("end").style.display="none";$("game").style.display="";
+ $("frames").innerHTML=QS.map((_,i)=>'<div class="fr" id="f'+i+'">'+(i+1)+'</div>').join("");drawScore();showQ()}
+function toMenu(){$("game").style.display="none";$("end").style.display="none";$("menu").style.display="flex";$("nameBox").style.display=$("teamBox").style.display="none"}
+function drawScore(){$("score").innerHTML=players.map((p,i)=>'<div class="pl'+(i==cur?' on':'')+'" style="background:'+p.c+'">'+p.n+'<small>score</small><b>'+p.s+'</b></div>').join("");
+ $("who").textContent=players[cur].n;$("who").style.color=players[cur].c}
+function showQ(){busy=false;setPins();const q=QS[qi];
+ document.querySelectorAll(".fr").forEach((f,i)=>f.classList.toggle("cur",i==qi));
+ $("qnum").textContent="Ball "+(qi+1)+" of "+QS.length+(players.length>1?"  ·  "+players[cur].n:"");$("qtext").textContent=q.q;
+ const o=$("opts");o.innerHTML="";q.o.forEach((t,j)=>{const b=document.createElement("button");b.className="opt";b.innerHTML="<b>"+"ABCD"[j]+"</b>"+t;b.onclick=()=>answer(j);o.appendChild(b)});
+ $("fb").style.display="none";$("next").style.display="none";$("banner").getAnimations().forEach(a=>a.cancel());$("banner").style.opacity=0}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function answer(j){if(busy)return;busy=true;const q=QS[qi],ok=j===q.c;const bs=$("opts").children;
+ for(let k=0;k<4;k++)bs[k].className="opt "+(k===q.c?"ok":(k===j?"no":"dim"));
+ $("f"+qi).classList.add(ok?"x":"m");$("f"+qi).textContent=ok?"X":"–";
+ if(ok){await strongShot();players[cur].s+=10;drawScore();banner("STRIKE!");applause();confetti()}
+ else{await weakShot();banner("Gutter ball");peep()}
+ const fb=$("fb");fb.style.background=ok?"#2f9e44":"#e03131";fb.innerHTML=(ok?"Correct! +10 &nbsp; ":"Not this time. &nbsp; ")+"<br>"+q.e;fb.style.display="block";
+ $("next").textContent=qi==QS.length-1?"See results ▶":"Next ball ▶";$("next").style.display="block"}
+function banner(t){const b=$("banner");b.textContent=t;b.style.color=t=="STRIKE!"?"#ffd43b":"#ff8787";b.animate([{opacity:0,transform:"scale(.3)"},{opacity:1,transform:"scale(1.15)",offset:.6},{opacity:1,transform:"scale(1)"}],{duration:600,fill:"forwards"})}
+async function strongShot(){const b=$("ball");rollSound(1.1,0.9);
+ b.animate([{left:"300px",top:"760px",transform:"scale(1) rotate(0)"},{left:"318px",top:"110px",transform:"scale(.42) rotate(-900deg)"}],{duration:1100,easing:"cubic-bezier(.3,.1,.6,1)",fill:"forwards"});
+ await sleep(1000);crash();
+ pins.forEach(p=>{const s=p.dataset.s,dx=(Math.random()-.5)*420,dy=-60-Math.random()*160,r=(Math.random()<.5?-1:1)*(200+Math.random()*500);
+  p.animate([{transform:"scale("+s+")",opacity:1},{transform:"translate("+dx+"px,"+dy+"px) rotate("+r+"deg) scale("+s+")",opacity:0}],{duration:900+Math.random()*400,easing:"cubic-bezier(.2,.7,.3,1)",fill:"forwards"})});
+ b.animate([{opacity:1},{opacity:0}],{duration:300,delay:100,fill:"forwards"});await sleep(700)}
+async function weakShot(){const b=$("ball");rollSound(2.4,0.35);const side=Math.random()<.5?-1:1;
+ b.animate([{left:"300px",top:"760px",transform:"scale(1) rotate(0)"},{left:(300+side*120)+"px",top:"470px",transform:"scale(.7) rotate(-300deg)",offset:.55},{left:(300+side*235)+"px",top:"300px",transform:"scale(.55) rotate(-420deg)"}],{duration:2400,easing:"cubic-bezier(.1,.6,.4,1)",fill:"forwards"});
+ await sleep(2400);pins.forEach(p=>p.animate([{transform:"scale("+p.dataset.s+") rotate(0)"},{transform:"scale("+p.dataset.s+") rotate(4deg)"},{transform:"scale("+p.dataset.s+") rotate(-3deg)"},{transform:"scale("+p.dataset.s+") rotate(0)"}],{duration:500}))}
+function confetti(){for(let i=0;i<70;i++){const d=document.createElement("div");d.className="conf";d.style.left=Math.random()*1920+"px";d.style.background=["#ffd43b","#ff6b6b","#4dabf7","#69db7c","#da77f2"][i%5];st.appendChild(d);
+ d.animate([{transform:"translateY(0) rotate(0)"},{transform:"translateY(1180px) rotate("+(Math.random()*900)+"deg)"}],{duration:1800+Math.random()*1500,easing:"ease-in"}).onfinish=()=>d.remove()}}
+function nextQ(){qi++;if(qi>=QS.length){finish();return}cur=(cur+1)%players.length;drawScore();showQ()}
+function finish(){const r=[...players].sort((a,b)=>b.s-a.s);const max=QS.length*10/players.length;
+ $("board").innerHTML=r.map((p,i)=>(i==0?"&#129351; ":i==1?"&#129352; ":i==2?"&#129353; ":"")+'<span style="color:'+p.c+'">'+p.n+"</span>: "+p.s+" points").join("<br>")+(players.length==1?"<br><small>"+(players[0].s/10)+" strikes out of 25</small>":"");
+ $("end").style.display="flex";applause();confetti()}
+</script></body></html>
